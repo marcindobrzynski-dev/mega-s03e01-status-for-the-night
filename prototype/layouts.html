@@ -1,0 +1,195 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>PROTOTYPE - status for the night - layouts A/B/C</title>
+<!--
+  PROTOTYPE, throwaway. Decision aid only: three table layouts on the same data.
+  Not the product. No build, no network, data inlined below.
+  Grey toolbar + Polish notes = prototype chrome (does NOT ship).
+  Framed white area = mocked page (what would ship).
+-->
+<style>
+  * { box-sizing: border-box; }
+  body { margin: 0; font-family: system-ui, -apple-system, "Segoe UI", sans-serif; background: #d9d9d9; color: #222; }
+
+  /* ---------- prototype chrome (does not ship) ---------- */
+  .proto-bar { position: sticky; top: 0; z-index: 10; background: #4a4a4a; color: #eee; padding: 10px 16px;
+    display: flex; flex-wrap: wrap; gap: 8px; align-items: center; font-size: 14px; border-bottom: 3px dashed #999; }
+  .proto-bar .tag { background: #222; padding: 2px 8px; border-radius: 3px; font-size: 12px; letter-spacing: .05em; }
+  .proto-bar button { font: inherit; background: #666; color: #fff; border: 1px solid #888; padding: 5px 12px; border-radius: 3px; cursor: pointer; }
+  .proto-bar button[aria-pressed="true"] { background: #eee; color: #222; border-color: #fff; font-weight: 600; }
+  .proto-bar label { margin-left: 12px; display: inline-flex; gap: 6px; align-items: center; cursor: pointer; }
+  .wrap { max-width: 900px; margin: 0 auto; padding: 16px; }
+  .variant { margin-bottom: 40px; }
+  .variant-label { font-size: 13px; font-weight: 700; color: #444; text-transform: uppercase; letter-spacing: .06em; margin: 0 0 6px; }
+  .proto-notes { background: #efefef; border: 1px dashed #888; border-radius: 4px; padding: 8px 14px 8px 30px; margin: 10px 0 0; font-size: 14px; color: #333; }
+  .proto-notes li { margin: 3px 0; }
+  .proto-missing { background: #fff3cd; border: 1px dashed #b38f00; color: #5c4a00; font-size: 13px; padding: 6px 10px; margin: 8px 0 0; border-radius: 4px; }
+
+  /* ---------- mocked page (what would ship) ---------- */
+  .page { background: #fff; border: 1px solid #999; box-shadow: 0 2px 8px rgba(0,0,0,.15); }
+  .page header { background: #7055C8; color: #fff; padding: 18px 20px; }
+  .page header h1 { margin: 0; font-size: 24px; font-weight: 600; }
+  .page header p { margin: 4px 0 0; font-size: 13px; opacity: .9; }
+  .page main { padding: 16px 20px; }
+  .page h2 { font-size: 16px; margin: 18px 0 8px; }
+  .page h2:first-child { margin-top: 0; }
+  .page table { width: 100%; border-collapse: collapse; font-size: 14px; }
+  .page th, .page td { text-align: left; padding: 6px 8px; border-bottom: 1px solid #ddd; vertical-align: top; }
+  .page th { border-bottom: 2px solid #7055C8; font-weight: 600; }
+  .page td.t { font-variant-numeric: tabular-nums; white-space: nowrap; }
+  .page tr.group th { background: #f0ecfa; border-bottom: 1px solid #c9bde9; padding-top: 8px; }
+  .page .board { display: block; font-size: 12px; color: #5a3fb0; font-weight: 500; margin-top: 2px; }
+  .page tr.group .board { display: inline; margin: 0 0 0 10px; }
+  .page footer { border-top: 1px solid #ddd; padding: 10px 20px; font-size: 12px; color: #666; }
+</style>
+</head>
+<body>
+
+<div class="proto-bar" role="toolbar" aria-label="prototyp - przełącznik">
+  <span class="tag">PROTOTYP - nie trafia na stronę</span>
+  <button data-mode="A">Wariant A</button>
+  <button data-mode="B">Wariant B</button>
+  <button data-mode="C">Wariant C</button>
+  <button data-mode="all">Pokaż wszystkie trzy</button>
+  <label><input type="checkbox" id="tram7"> linia bez incydentu w tym tygodniu (dodaje fikcyjny <code>tram 7</code>)</label>
+</div>
+
+<div class="wrap" id="out"></div>
+
+<script>
+// ---- data, inlined exactly as given ----
+const DATA = {"updatedAt":"2026-11-18T21:01:00Z","incidents":[
+{"id":"3710","line":"bus 14","opened":"2026-09-12T23:40:00Z","closed":"2026-09-12T23:52:00Z","what":"depot sensor reset","author":"night shift"},
+{"id":"3711","line":"tram 3","opened":"2026-09-13T22:50:00Z","closed":"2026-09-13T23:06:00Z","what":"board refresh stuck","author":"on-call"},
+{"id":"3712","line":"night bus N2","opened":"2026-09-14T00:15:00Z","closed":"2026-09-14T00:33:00Z","what":"rota sync retries","author":"night shift"},
+{"id":"3713","line":"bus 14","opened":"2026-09-14T01:25:00Z","closed":"2026-09-14T01:41:00Z","what":"gps gaps","author":"on-call"},
+{"id":"3714","line":"tram 3","opened":"2026-09-14T02:35:00Z","closed":"2026-09-14T02:49:00Z","what":"platform display lag","author":"night shift"},
+{"id":"3715","line":"sched-prod","opened":"2026-09-14T03:46:00Z","closed":"2026-09-14T04:04:00Z","what":"schedule rebuild","author":"—"}]};
+
+// Prototype-only: a fictional line with zero incidents (toggle).
+const FICTIONAL_QUIET_LINE = "tram 7";
+// R-H6M verbatim text, attached to the tram 3 row/group.
+const BOARD_LINE = "tram 3";
+const BOARD_TEXT = "read on every tram 3 board";
+
+// ---- helpers ----
+const pad = n => String(n).padStart(2, "0");
+const ddmm = iso => { const d = new Date(iso); return pad(d.getUTCDate()) + "/" + pad(d.getUTCMonth() + 1); };
+const hhmm = iso => { if (!iso) return "—"; const d = new Date(iso); return pad(d.getUTCHours()) + ":" + pad(d.getUTCMinutes()); };
+const esc = s => String(s).replace(/[&<>"]/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+const who = a => (a && String(a).trim()) ? a : "—";
+const board = line => line === BOARD_LINE ? `<span class="board">${esc(BOARD_TEXT)}</span>` : "";
+
+function model(withQuiet) {
+  const incidents = [...DATA.incidents].sort((a, b) => b.opened.localeCompare(a.opened)); // newest first
+  // Lines derived from data, ordered by each line's newest incident.
+  const lines = [];
+  for (const i of incidents) if (!lines.includes(i.line)) lines.push(i.line);
+  if (withQuiet && !lines.includes(FICTIONAL_QUIET_LINE)) lines.push(FICTIONAL_QUIET_LINE);
+  const byLine = l => incidents.filter(i => i.line === l);
+  return { incidents, lines, byLine };
+}
+
+function page(inner) {
+  return `<div class="page">
+    <header><h1>status for the night</h1><p>updated ${ddmm(DATA.updatedAt)} ${hhmm(DATA.updatedAt)}</p></header>
+    <main>${inner}</main>
+    <footer>all times UTC</footer>
+  </div>`;
+}
+
+const INC_HEAD = `<tr><th>date</th><th>opened</th><th>closed</th><th>line</th><th>what</th><th>who</th></tr>`;
+const incRow = (i, showBoard = true) => `<tr><td class="t">${ddmm(i.opened)}</td><td class="t">${hhmm(i.opened)}</td><td class="t">${hhmm(i.closed)}</td>
+  <td>${esc(i.line)}${showBoard ? board(i.line) : ""}</td><td>${esc(i.what)}</td><td>${esc(who(i.author))}</td></tr>`;
+
+// ---- variant A: lines table + incidents table ----
+function variantA(m) {
+  const lineRows = m.lines.map(l => {
+    const inc = m.byLine(l);
+    const open = inc.some(i => !i.closed);
+    const last = inc[0];
+    const lastTxt = last ? `${ddmm(last.opened)} ${hhmm(last.opened)} ${esc(last.what)}` : "—";
+    return `<tr><td>${esc(l)}${board(l)}</td><td>${open ? "open" : "ok"}</td><td>${lastTxt}</td></tr>`;
+  }).join("");
+  return page(`
+    <h2>lines</h2>
+    <table><thead><tr><th>line</th><th>now</th><th>last incident</th></tr></thead><tbody>${lineRows}</tbody></table>
+    <h2>incidents</h2>
+    <table><thead>${INC_HEAD}</thead><tbody>${m.incidents.map(i => incRow(i, false)).join("")}</tbody></table>`);
+}
+
+// ---- variant B: one incident table ----
+function variantB(m) {
+  return page(`<table><thead>${INC_HEAD}</thead><tbody>${m.incidents.map(i => incRow(i)).join("")}</tbody></table>`);
+}
+
+// ---- variant C: one table grouped by line ----
+function variantC(m) {
+  const head = `<tr><th>date</th><th>opened</th><th>closed</th><th>what</th><th>who</th></tr>`;
+  let body = "";
+  for (const l of m.lines) {
+    const inc = m.byLine(l);
+    if (!inc.length) continue; // no incidents -> no group (no invented placeholder)
+    body += `<tr class="group"><th colspan="5">${esc(l)}${board(l)}</th></tr>`;
+    body += inc.map(i => `<tr><td class="t">${ddmm(i.opened)}</td><td class="t">${hhmm(i.opened)}</td><td class="t">${hhmm(i.closed)}</td><td>${esc(i.what)}</td><td>${esc(who(i.author))}</td></tr>`).join("");
+  }
+  return page(`<table><thead>${head}</thead><tbody>${body}</tbody></table>`);
+}
+
+// ---- prototype notes (Polish, do not ship) ----
+const NOTES = {
+  A: { title: "A — dwie tabele (lines + incidents)", render: variantA, notes: [
+    "R-X3M dosłownie: tak. Każda linia ma swój wiersz w tabeli „lines”, także tram 3 i także linia bez incydentu w tym tygodniu (włącz tram 7).",
+    "R-R9M („najnowszy incydent na górze”): częściowo. Tabela „incidents” idzie od najnowszego, ale nad nią stoi tabela „lines”, więc pierwszy wiersz strony to linia, nie incydent.",
+    "Minus: strona jest dłuższa, a „last incident” powtarza dane z drugiej tabeli (dwa miejsca do utrzymania w zgodzie)."
+  ]},
+  B: { title: "B — jedna tabela incydentów", render: variantB, notes: [
+    "R-X3M dosłownie: nie. Wiersz jest na incydent, nie na linię; tram 3 ma dwa wiersze, a linia bez incydentu nie ma żadnego (włącz tram 7).",
+    "R-R9M: tak, w pełni. Pierwszy wiersz strony to najnowszy incydent.",
+    "Minus: tekst R-H6M trzeba powtórzyć na każdym wierszu tram 3 (tu: dwa razy), bo nie ma jednego „wiersza tram 3”."
+  ]},
+  C: { title: "C — jedna tabela pogrupowana po linii", render: variantC, notes: [
+    "R-X3M dosłownie: częściowo. Każda linia z incydentem ma swój wiersz-nagłówek grupy (tram 3 też), ale linia bez incydentu znika, chyba że wymyślimy pustą grupę (włącz tram 7).",
+    "R-R9M: częściowo. Najnowszy incydent jest na samej górze (grupa sched-prod), ale niżej kolejność jest per linia, nie globalnie chronologiczna.",
+    "Minus: żeby zobaczyć, co działo się po kolei w nocy, trzeba skakać między grupami."
+  ]}
+};
+
+function missingNote(key, m, withQuiet) {
+  if (!withQuiet || key === "A") return "";
+  if (m.byLine(FICTIONAL_QUIET_LINE).length) return "";
+  return `<p class="proto-missing">Prototyp: <strong>${FICTIONAL_QUIET_LINE}</strong> jest w danych, ale w tym wariancie nie ma dla niego żadnego wiersza. Pokazanie go wymagałoby wymyślonego wiersza zastępczego.</p>`;
+}
+
+function renderVariant(key, m, withQuiet) {
+  const v = NOTES[key];
+  return `<section class="variant">
+    <p class="variant-label">${v.title}</p>
+    ${v.render(m)}
+    ${missingNote(key, m, withQuiet)}
+    <ul class="proto-notes">${v.notes.map(n => `<li>${n}</li>`).join("")}</ul>
+  </section>`;
+}
+
+let mode = new URLSearchParams(location.search).get("v") || "A";
+function render() {
+  const withQuiet = document.getElementById("tram7").checked;
+  const m = model(withQuiet);
+  const keys = mode === "all" ? ["A", "B", "C"] : [mode];
+  document.getElementById("out").innerHTML = keys.map(k => renderVariant(k, m, withQuiet)).join("");
+  document.querySelectorAll(".proto-bar button").forEach(b => b.setAttribute("aria-pressed", String(b.dataset.mode === mode)));
+}
+document.querySelectorAll(".proto-bar button").forEach(b => b.addEventListener("click", () => {
+  mode = b.dataset.mode;
+  history.replaceState(null, "", "?v=" + mode);
+  render();
+}));
+document.getElementById("tram7").addEventListener("change", render);
+if (!NOTES[mode] && mode !== "all") mode = "A";
+render();
+</script>
+</body>
+</html>
