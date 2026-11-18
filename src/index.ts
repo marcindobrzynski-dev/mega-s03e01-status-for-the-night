@@ -64,6 +64,14 @@ function newestFirst(a: Incident, b: Incident): number {
 	return Date.parse(b.opened) - Date.parse(a.opened) || compareIds(b.id, a.id);
 }
 
+/**
+ * Open means no closing time: `closed` is empty or is not a timestamp (a placeholder such as `—`).
+ * The same rule decides when the page shows `—` in the closed column, so the two tables agree.
+ */
+function isOpen(incident: Incident): boolean {
+	return !isDateString(incident.closed);
+}
+
 export function buildStatus(feed: unknown): Status {
 	if (!isRecord(feed) || !isDateString(feed.updatedAt) || !Array.isArray(feed.incidents)) {
 		throw new Error("feed body has an unexpected shape");
@@ -77,9 +85,9 @@ export function buildStatus(feed: unknown): Status {
 	for (const incident of incidents) {
 		const entry = byLine.get(incident.line);
 		if (entry) {
-			entry.open ||= isEmpty(incident.closed);
+			entry.open ||= isOpen(incident);
 		} else {
-			byLine.set(incident.line, { line: incident.line, open: isEmpty(incident.closed), last: incident });
+			byLine.set(incident.line, { line: incident.line, open: isOpen(incident), last: incident });
 		}
 	}
 	if (!byLine.has(TRAM_3)) {
@@ -154,9 +162,9 @@ function dayMonth(value: unknown): string {
 }
 
 function lineRow({ line, open, last }: LineStatus): string {
-	const board = line === TRAM_3 ? `<span class="board">${BOARD_TEXT}</span>` : "";
+	const board = line === TRAM_3 ? ` <span class="board">${BOARD_TEXT}</span>` : "";
 	const lastText = last ? `${stamp(last.opened)} ${cellText(last.what)}` : DASH;
-	return `<tr><td>${escapeHtml(line)}${board}</td><td>${open ? "open" : "ok"}</td><td>${lastText}</td></tr>`;
+	return `<tr><td><span class="name">${escapeHtml(line)}</span>${board}</td><td>${open ? "open" : "ok"}</td><td>${lastText}</td></tr>`;
 }
 
 function incidentRow(incident: Incident): string {
@@ -204,7 +212,7 @@ table { width: 100%; border-collapse: collapse; font-size: 14px; }
 th, td { text-align: left; padding: 6px 8px; border-bottom: 1px solid #ddd; vertical-align: top; }
 th { border-bottom: 2px solid ${BANNER}; font-weight: 600; white-space: nowrap; }
 td.t { font-variant-numeric: tabular-nums; white-space: nowrap; }
-.board { display: block; font-size: 12px; color: #5a3fb0; font-weight: 500; margin-top: 2px; }
+.board { display: block; font-size: 12px; color: ${BANNER}; font-weight: 500; margin-top: 2px; }
 footer { border-top: 1px solid #ddd; padding: 10px 20px; font-size: 12px; color: #595959; }
 `;
 
@@ -267,12 +275,33 @@ async function readFeed(url: string): Promise<Status> {
 	return buildStatus(await response.json());
 }
 
+/** `//status.json` and `/status.json/` mean `/status.json`: repeated and trailing slashes are dropped. */
+function normalisePath(pathname: string): string {
+	return pathname.replace(/\/+/g, "/").replace(/(.)\/$/, "$1");
+}
+
+/** A board that sends a non-simple header asks first; without this answer the browser blocks its GET (R-Z8H). */
+function preflight(): Response {
+	return new Response(null, {
+		status: 204,
+		headers: {
+			"Access-Control-Allow-Origin": "*",
+			"Access-Control-Allow-Methods": ALLOW,
+			"Access-Control-Allow-Headers": "*",
+			"Access-Control-Max-Age": "86400",
+		},
+	});
+}
+
 async function route(request: Request, env: Env): Promise<Response> {
+	const pathname = normalisePath(new URL(request.url).pathname);
+
+	if (request.method === "OPTIONS" && pathname === "/status.json") {
+		return preflight();
+	}
 	if (request.method !== "GET" && request.method !== "HEAD") {
 		return respond("method not allowed", 405, { "Content-Type": TEXT, Allow: ALLOW });
 	}
-
-	const { pathname } = new URL(request.url);
 	if (pathname !== "/" && pathname !== "/status.json") {
 		return respond("not found", 404, { "Content-Type": TEXT });
 	}
