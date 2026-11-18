@@ -4,7 +4,7 @@ Written 2026-11-18. Source: the grilling session of that day between the lead (M
 
 Decision ids (`Q1`–`Q20`) refer to that session. Requirement tags (`R-…`) refer to the accepted list in `assets/list-sent.json`.
 
-Lines marked **agent default** were added by the agent and not put to the lead as a question. They are sensible fill-ins, not lead decisions, and the lead can overrule them. Two points are still open; see "Open questions for the lead" at the end.
+Lines marked **agent default** were added by the agent and not put to the lead as a question. They are sensible fill-ins, not lead decisions, and the lead can overrule them. The two questions the review left open were answered by the lead on 2026-11-18; see "Late decisions" at the end.
 
 ## Problem Statement
 
@@ -51,7 +51,7 @@ One public page that support can link to, plus a JSON document beside it that ot
 25. As a privacy-minded reader, I want no tracking, no cookies and no cookie banner, so that reading the page leaves no trace.
 26. As a reader on a slow or locked-down device, I want the page to work without JavaScript, so that it always renders.
 27. As the lead, I want the build held to the tagged requirements only, with untagged lines as context, so that scope stays fixed.
-28. As the lead, I want the deploy to wait for my yes, so that nothing is published without my approval.
+28. As the lead, I want the deploy and the claim each to wait for my yes, so that nothing is published or submitted without my approval.
 29. As the lead, I want a granular Conventional Commits history, so that I can follow how the solution was reached.
 30. As the lead, I want an independent review against the Definition of Done before the deploy, so that the first claim is as complete as possible.
 
@@ -96,7 +96,9 @@ Chosen from a three-variant prototype (`prototype/layouts.html`), which stays in
 
 - Banner: background `#6F55C9`, measured from the pixels of the pack's `screenshot.png` (R-M6Z). Heading text exactly `status for the night`, lower case (R-Z5K).
 - Table "lines", columns `line / now / last incident`:
-  - One row per distinct `line` value in the feed (R-X3M). Whether `tram 3` must also get a row when the feed has no tram 3 incident is open; see "Open questions for the lead".
+  - One row per distinct `line` value in the feed (R-X3M).
+  - `tram 3` always gets a row, also when the feed has no tram 3 incident. In that case `now` is `ok`, `last incident` is `—`, and the R-H6M sentence is still shown (lead, late decision 1). This is the only line name written into the code.
+  - **Agent default:** a line without incidents is placed after the lines that have incidents.
   - Rows are ordered by each line's newest incident, newest first (Q11).
   - `now` is `open` when the line has an incident without `closed`, otherwise `ok` (Q17).
   - `last incident` shows the date, the opening time and `what` of the line's newest incident, in this form: `14/09 03:46 schedule rebuild` (form taken from the prototype).
@@ -146,7 +148,8 @@ One source file means no two agents write it at the same time, so the steps run 
 5. Opus subagent: `feat:` request handler with both routes and the 502 path.
 6. Main agent: local checks with `curl` and Claude in Chrome, results written to the log.
 7. Fable 5.2 subagent: review against the Definition of Done, without being told the main agent's opinion.
-8. Lead: yes to the deploy. Main agent: `npx wrangler deploy`, the same checks on the public address, `claim-challenge`, then the debrief. Whether the claim needs its own yes is open; see "Open questions for the lead".
+8. Lead: yes to the deploy. Main agent: `npx wrangler deploy`, then the same checks on the public address.
+9. Lead: a separate yes to the claim, after seeing the results of the public checks (late decision 2). Main agent: `claim-challenge`, then the debrief.
 
 **Agent additions to the accepted plan:** before step 3 the agent re-reads the Challenge page (signed in, Claude in Chrome) for new product answers; and the step-7 reviewer is not told the main agent's opinion.
 
@@ -193,7 +196,9 @@ One source file means no two agents write it at the same time, so the steps run 
 - **Claim shape.** `claim-challenge` with `uuid` `c0000000-0000-4000-8000-0000005e03e1`, `receipts: { receipt }` and `answer { receipt, buildUrl }`. Read the tool's schema before sending.
 - **Feed snapshot of 2026-11-18** (six records, ids 3710–3715, lines `bus 14`, `tram 3`, `night bus N2`, `sched-prod`) is in the session handoff. It is an example only; the build must not depend on these values.
 
-## Open questions for the lead
+## Late decisions
 
-1. **A tram 3 row with no tram 3 incident.** The lines table has one row per `line` value in the feed. If a week's feed has no tram 3 incident, the tram 3 row and the R-H6M sentence disappear, which goes against R-X3M ("tram 3 included"). Should `tram 3` always get a row (`now` = `ok`, `last incident` = `—`), even though that puts one line name into the code? The agent recommends yes. The feed of 2026-11-18 has two tram 3 incidents, so this does not block the first build.
-2. **A yes for the claim.** The plan asks the lead's yes for the deploy only. Does `claim-challenge` need its own yes, or does the deploy yes cover it? The agent recommends one yes for both, given once the public checks pass.
+The review left two questions open. The lead answered both on 2026-11-18, after the first commit of this spec.
+
+1. **A tram 3 row with no tram 3 incident.** `tram 3` always gets a row in the lines table (`now` = `ok`, `last incident` = `—`), so that R-X3M ("tram 3 included") and the R-H6M sentence hold in a week without a tram 3 incident.
+2. **A yes for the claim.** `claim-challenge` needs its own yes from the lead. The yes to the deploy does not cover it.
