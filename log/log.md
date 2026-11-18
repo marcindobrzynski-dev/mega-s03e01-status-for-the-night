@@ -1,6 +1,6 @@
 # S03E01 "status for the night" — log
 
-Tickets, tokens and signed links are masked. Keep this file out of any pushed repo.
+Tickets, tokens and signed links are masked. The human published this repo as public on 2026-11-18; keep it that way: never write a receipt, a ticket or a signed link here.
 
 ## 2026-11-15
 
@@ -126,3 +126,4 @@ Memo speaker: on-call. Recording speaker: product. Whisper heard "RZ 8 H", "R H2
 43. Not checked on the public address: the 502 path (it would need the deployed `FEED_URL` changed). Checked locally only (entries 34, 36). Claim not sent: it waits for the human's separate yes.
 44. Human: yes to the claim. `claim-challenge` 22:19 UTC with `receipts: { receipt }` and `answer { receipt, buildUrl: https://status-for-the-night.marcindobrzynski-dev.workers.dev }` → `status: solved`, solvedAt `2026-11-18T22:19:30Z`. Rook's note: "you built what was agreed. the rest went back as questions." First step-two try, no hint used.
 45. `debrief` saved (first call refused: one field over 160 characters; shortened). Sheet: https://hq.mega.dev/challenges/status-for-the-night#debrief
+46. Human asked for the repo to be published as a public GitHub project with the `gh` CLI. Checked before the push: no receipt (`v1.eyJ`), no board link with a token and no Cloudflare account id in any tracked file; `receipt.txt` is git-ignored. Published as `marcindobrzynski-dev/mega-s03e01-status-for-the-night`, like the earlier public course repos.
