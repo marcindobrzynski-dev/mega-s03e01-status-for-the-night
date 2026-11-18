@@ -1,0 +1,15 @@
+{
+	"name": "status-for-the-night",
+	"version": "0.0.0",
+	"private": true,
+	"scripts": {
+		"dev": "wrangler dev",
+		"deploy": "wrangler deploy",
+		"cf-typegen": "wrangler types",
+		"type-check": "wrangler types && tsc"
+	},
+	"devDependencies": {
+		"typescript": "^5.5.2",
+		"wrangler": "4.164.0"
+	}
+}

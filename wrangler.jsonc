@@ -1,0 +1,13 @@
+{
+	"$schema": "./node_modules/wrangler/config-schema.json",
+	"name": "status-for-the-night",
+	"main": "src/index.ts",
+	"compatibility_date": "2026-11-18",
+	// One public address: the workers.dev one. No version/preview URLs.
+	"workers_dev": true,
+	"preview_urls": false,
+	"vars": {
+		// The ops feed, read live on every request.
+		"FEED_URL": "https://hq.mega.dev/challenges/status-for-the-night/api/incidents/2b04e228c66a"
+	}
+}
