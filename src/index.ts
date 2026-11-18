@@ -87,7 +87,154 @@ export function buildStatus(feed: unknown): Status {
 	return { updatedAt: feed.updatedAt, incidents, lines: [...byLine.values()] };
 }
 
-// Skeleton only. renderPage and the request handler follow.
+/** Shown in place of every empty value on the page (spec, Q13). */
+const DASH = "—";
+
+/** Visible text of the tram 3 row (R-H6M). */
+const BOARD_TEXT = "read on every tram 3 board";
+
+/** Banner violet measured from the pack's screenshot (R-M6Z). */
+const BANNER = "#6F55C9";
+
+const HTML_ESCAPES: Record<string, string> = {
+	"&": "&amp;",
+	"<": "&lt;",
+	">": "&gt;",
+	'"': "&quot;",
+	"'": "&#39;",
+};
+
+function escapeHtml(value: string): string {
+	return value.replace(/[&<>"']/g, (c) => HTML_ESCAPES[c] ?? c);
+}
+
+/** A feed value as escaped cell text: `—` when empty, otherwise `String(value)`. */
+function cellText(value: unknown): string {
+	return isEmpty(value) ? DASH : escapeHtml(String(value));
+}
+
+/** The instant of an ISO timestamp, or null when it is not a string that parses. */
+function parseInstant(value: unknown): Date | null {
+	if (typeof value !== "string") return null;
+	const ms = Date.parse(value);
+	return Number.isNaN(ms) ? null : new Date(ms);
+}
+
+function pad2(n: number): string {
+	return String(n).padStart(2, "0");
+}
+
+/** Day first, from the UTC parts (spec, R-K6L). */
+function formatDayMonth(date: Date): string {
+	return `${pad2(date.getUTCDate())}/${pad2(date.getUTCMonth() + 1)}`;
+}
+
+/** 24-hour, from the UTC parts. */
+function formatTime(date: Date): string {
+	return `${pad2(date.getUTCHours())}:${pad2(date.getUTCMinutes())}`;
+}
+
+/** `DD/MM HH:MM`, or `—` when the value is empty or does not parse. */
+function stamp(value: unknown): string {
+	const date = parseInstant(value);
+	return date ? `${formatDayMonth(date)} ${formatTime(date)}` : DASH;
+}
+
+/** `HH:MM` only, or `—` when the value is empty or does not parse. */
+function time(value: unknown): string {
+	const date = parseInstant(value);
+	return date ? formatTime(date) : DASH;
+}
+
+function dayMonth(value: unknown): string {
+	const date = parseInstant(value);
+	return date ? formatDayMonth(date) : DASH;
+}
+
+function lineRow({ line, open, last }: LineStatus): string {
+	const board = line === TRAM_3 ? `<span class="board">${BOARD_TEXT}</span>` : "";
+	const lastText = last ? `${stamp(last.opened)} ${cellText(last.what)}` : DASH;
+	return `<tr><td>${escapeHtml(line)}${board}</td><td>${open ? "open" : "ok"}</td><td>${lastText}</td></tr>`;
+}
+
+function incidentRow(incident: Incident): string {
+	const cells = [
+		`<td class="t">${dayMonth(incident.opened)}</td>`,
+		`<td class="t">${time(incident.opened)}</td>`,
+		`<td class="t">${time(incident.closed)}</td>`,
+		`<td>${escapeHtml(incident.line)}</td>`,
+		`<td>${cellText(incident.what)}</td>`,
+		`<td>${cellText(incident.author)}</td>`,
+	];
+	return `<tr>${cells.join("")}</tr>`;
+}
+
+function headRow(columns: readonly string[]): string {
+	return `<tr>${columns.map((c) => `<th scope="col">${c}</th>`).join("")}</tr>`;
+}
+
+function table(id: string, columns: readonly string[], rows: readonly string[]): string {
+	return `<h2 id="${id}">${id}</h2>
+<div class="scroll" role="region" aria-labelledby="${id}" tabindex="0">
+<table>
+<thead>${headRow(columns)}</thead>
+<tbody>
+${rows.join("\n")}
+</tbody>
+</table>
+</div>`;
+}
+
+const STYLE = `
+:root { color-scheme: light; }
+* { box-sizing: border-box; }
+body { margin: 0; background: #fff; color: #1a1a1a;
+	font-family: system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+	line-height: 1.4; -webkit-text-size-adjust: 100%; text-size-adjust: 100%; }
+header { background: ${BANNER}; color: #fff; padding: 18px 20px; }
+h1 { margin: 0; font-size: 24px; font-weight: 600; }
+main { padding: 16px 20px; max-width: 960px; }
+h2 { font-size: 16px; margin: 24px 0 8px; }
+h2:first-child { margin-top: 0; }
+.scroll { overflow-x: auto; -webkit-overflow-scrolling: touch; }
+.scroll:focus-visible { outline: 2px solid ${BANNER}; outline-offset: 2px; }
+table { width: 100%; border-collapse: collapse; font-size: 14px; }
+th, td { text-align: left; padding: 6px 8px; border-bottom: 1px solid #ddd; vertical-align: top; }
+th { border-bottom: 2px solid ${BANNER}; font-weight: 600; white-space: nowrap; }
+td.t { font-variant-numeric: tabular-nums; white-space: nowrap; }
+.board { display: block; font-size: 12px; color: #5a3fb0; font-weight: 500; margin-top: 2px; }
+footer { border-top: 1px solid #ddd; padding: 10px 20px; font-size: 12px; color: #595959; }
+`;
+
+/** The whole HTML document for the status. Pure: the output depends only on `status`. */
+export function renderPage(status: Status): string {
+	const lines = table("lines", ["line", "now", "last incident"], status.lines.map(lineRow));
+	const incidents = table(
+		"incidents",
+		["date", "opened", "closed", "line", "what", "who"],
+		status.incidents.map(incidentRow),
+	);
+	return `<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>status for the night</title>
+<style>${STYLE}</style>
+</head>
+<body>
+<header><h1>status for the night</h1></header>
+<main>
+${lines}
+${incidents}
+</main>
+<footer>all times UTC · updated ${stamp(status.updatedAt)}</footer>
+</body>
+</html>
+`;
+}
+
+// Skeleton only. The request handler follows.
 export default {
 	async fetch(): Promise<Response> {
 		return new Response("not built yet", { status: 503 });
