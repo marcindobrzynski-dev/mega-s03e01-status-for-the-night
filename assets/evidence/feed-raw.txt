@@ -1,0 +1,29 @@
+HTTP/1.1 200 OK
+Date: Wed, 18 Nov 2026 20:37:57 GMT
+Content-Type: application/json; charset=utf-8
+Transfer-Encoding: chunked
+Connection: keep-alive
+Access-Control-Allow-Origin: *
+Cache-Control: public, max-age=60
+ETag: W/"388-NnmbLuCBBws0IquQXcLu/EBK6pQ"
+Strict-Transport-Security: max-age=31536000; includeSubDomains
+Vary: Origin
+Access-Control-Allow-Credentials: true
+Content-Security-Policy: default-src 'self';base-uri 'self';font-src 'self';form-action 'self';frame-ancestors 'none';img-src 'self' data: blob: https://res.cloudinary.com;object-src 'none';script-src 'self' 'sha256-+rLcF463ATXwuF6+SufVojE0v+FGEFhD8xNspydZbos=' 'sha256-CcLzd5sWeF9aLUG3aSlU+3oUSgKxGx+rSt9uw57sg2w=' 'sha256-Qm7+oZxohhdo6tCPtrFFkGn3/ZZmSxGdB009aWteUTI=';script-src-attr 'none';style-src 'self';upgrade-insecure-requests;media-src 'self';connect-src 'self';frame-src 'self' https://player.vimeo.com https://www.youtube-nocookie.com
+Cross-Origin-Opener-Policy: same-origin
+Cross-Origin-Resource-Policy: same-origin
+Origin-Agent-Cluster: ?1
+Referrer-Policy: no-referrer
+X-Content-Type-Options: nosniff
+X-DNS-Prefetch-Control: off
+X-Download-Options: noopen
+X-Frame-Options: SAMEORIGIN
+X-Permitted-Cross-Domain-Policies: none
+X-XSS-Protection: 0
+Report-To: {"group":"cf-nel","max_age":604800,"endpoints":[{"url":"https://a.nel.cloudflare.com/report/v4?s=DmvzhzUyv7ADyy6N1vn6itH%2FrKDKeV6niJI6TXBesJUry00SWGgF5YVonmHw4udU95LgG6b8w3f1xW%2BSCyaIAnUp9MzW99alhT5Rsr41Q70nwgNhif2rKMLFNO%2F8PA%3D%3D"}]}
+Nel: {"report_to":"cf-nel","success_fraction":0.0,"max_age":604800}
+Server: cloudflare
+CF-RAY: a5c9c6a92a31c05b-WAW
+alt-svc: h3=":443"; ma=86400
+
+{"updatedAt":"2026-11-18T20:37:00Z","incidents":[{"id":"3710","line":"bus 14","opened":"2026-09-12T23:40:00Z","closed":"2026-09-12T23:52:00Z","what":"depot sensor reset","author":"night shift"},{"id":"3711","line":"tram 3","opened":"2026-09-13T22:50:00Z","closed":"2026-09-13T23:06:00Z","what":"board refresh stuck","author":"on-call"},{"id":"3712","line":"night bus N2","opened":"2026-09-14T00:15:00Z","closed":"2026-09-14T00:33:00Z","what":"rota sync retries","author":"night shift"},{"id":"3713","line":"bus 14","opened":"2026-09-14T01:25:00Z","closed":"2026-09-14T01:41:00Z","what":"gps gaps","author":"on-call"},{"id":"3714","line":"tram 3","opened":"2026-09-14T02:35:00Z","closed":"2026-09-14T02:49:00Z","what":"platform display lag","author":"night shift"},{"id":"3715","line":"sched-prod","opened":"2026-09-14T03:46:00Z","closed":"2026-09-14T04:04:00Z","what":"schedule rebuild","author":"—"}]}

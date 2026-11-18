@@ -1,0 +1,21 @@
+{
+  "accepted": [
+    { "tag": "R-R9M", "source": { "file": "spec.pdf", "region": { "page": 1, "x": 0.115, "y": 0.452, "w": 0.298, "h": 0.021 } } },
+    { "tag": "R-M6Z", "source": { "file": "screenshot.png", "region": { "x": 0.753, "y": 0.117, "w": 0.131, "h": 0.126 } } },
+    { "tag": "R-L6H", "source": { "file": "whiteboard.jpg", "region": { "x": 0.183, "y": 0.316, "w": 0.349, "h": 0.105 } } },
+    { "tag": "R-L6Z", "source": { "file": "recording.mp4", "at": 20, "region": { "x": 0.675, "y": 0.269, "w": 0.292, "h": 0.067 } } },
+    { "tag": "R-X3M", "source": { "file": "recording.mp4", "at": 6 } },
+    { "tag": "R-Z8H", "source": { "file": "memo.m4a", "at": 4.9 } },
+    { "tag": "R-H2K", "source": { "file": "memo.m4a", "at": 18 } },
+    { "tag": "R-Z5K", "source": { "file": "memo.m4a", "at": 26.4 } },
+    { "tag": "R-M2H", "source": { "file": "memo.m4a", "at": 33.7 } },
+    { "tag": "R-H6M", "source": { "file": "https://hq.mega.dev/challenges/status-for-the-night/board?t=<MASKED: link as the Challenge page gave it on 2026-11-18>", "region": { "x": 0.056, "y": 0.595, "w": 0.482, "h": 0.125 } } }
+  ],
+  "conflicts": [
+    { "tag": "R-K6L", "with": "R-M6X", "ownerQuestion": "R-K6L says dates are shown day first (14/09), the way the night shift writes them; R-M6X says month first (09/14), like the boards. Which order should the status page use?", "source": { "file": "spec.pdf", "region": { "page": 2, "x": 0.115, "y": 0.182, "w": 0.769, "h": 0.021 } } },
+    { "tag": "R-M6X", "with": "R-K6L", "ownerQuestion": "R-M6X says dates are shown month first (09/14), like the boards; R-K6L says day first (14/09), the way the night shift writes them. Which order should the status page use?", "source": { "file": "screenshot.png", "region": { "x": 0.747, "y": 0.352, "w": 0.162, "h": 0.119 } } },
+    { "tag": "R-L8Z", "with": "R-L3R", "ownerQuestion": "R-L8Z says the page shows last night only, with nothing older; R-L3R says to keep the whole week on it. Which should the status page do?", "source": { "file": "spec.pdf", "region": { "page": 2, "x": 0.115, "y": 0.272, "w": 0.474, "h": 0.021 } } },
+    { "tag": "R-L3R", "with": "R-L8Z", "ownerQuestion": "R-L3R says to keep the whole week on the page; R-L8Z says last night only, with nothing older. Which should the status page do?", "source": { "file": "whiteboard.jpg", "region": { "x": 0.179, "y": 0.448, "w": 0.307, "h": 0.051 } } },
+    { "tag": "R-X9Z", "with": "3715", "ownerQuestion": "R-X9Z says each incident names who ran it, but record 3715 (schedule rebuild) has no author in the ops feed. What should the row for record 3715 show?", "source": { "file": "spec.pdf", "region": { "page": 1, "x": 0.115, "y": 0.494, "w": 0.341, "h": 0.021 } } }
+  ]
+}

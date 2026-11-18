@@ -1,0 +1,184 @@
+<!doctype html>
+<html lang="pl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>S03E01 · wymagania i dowody</title>
+<style>
+  :root { --bg:#f6f5f2; --card:#fff; --ink:#1c1c1c; --mute:#6b6b6b; --line:#dddad3; --ok:#1f7a4d; --warn:#b3261e; --spoken:#8a5a00; --hi:#ff2d55; }
+  * { box-sizing:border-box; }
+  body { margin:0; font:15px/1.5 system-ui, Segoe UI, sans-serif; background:var(--bg); color:var(--ink); }
+  header { padding:24px 32px 8px; max-width:1300px; margin:auto; }
+  h1 { margin:0 0 4px; font-size:22px; }
+  h2 { font-size:17px; margin:32px 0 12px; }
+  .sub { color:var(--mute); margin:0; }
+  main { max-width:1300px; margin:auto; padding:0 32px 64px; }
+  nav { position:sticky; top:0; background:var(--bg); padding:12px 0; z-index:5; display:flex; gap:8px; flex-wrap:wrap; border-bottom:1px solid var(--line); }
+  nav button { font:inherit; padding:6px 14px; border:1px solid var(--line); background:var(--card); border-radius:999px; cursor:pointer; }
+  nav button.on { background:var(--ink); color:#fff; border-color:var(--ink); }
+  .row { display:grid; grid-template-columns:minmax(260px, 1fr) minmax(0, 2fr); gap:20px; background:var(--card); border:1px solid var(--line); border-radius:10px; padding:18px; margin:14px 0; }
+  @media (max-width:800px) { .row { grid-template-columns:1fr; } }
+  .tag { font:600 15px ui-monospace, Consolas, monospace; }
+  .pill { display:inline-block; font-size:12px; padding:1px 8px; border-radius:999px; margin-left:6px; border:1px solid currentColor; }
+  .pill.accepted { color:var(--ok); } .pill.conflict { color:var(--warn); } .pill.spoken { color:var(--spoken); }
+  blockquote { margin:10px 0; padding:8px 12px; border-left:3px solid var(--line); background:#faf9f6; font-size:16px; }
+  dl { margin:8px 0 0; display:grid; grid-template-columns:auto 1fr; gap:2px 12px; font-size:13px; }
+  dt { color:var(--mute); } dd { margin:0; }
+  .q { margin-top:10px; padding:8px 12px; border:1px dashed var(--warn); border-radius:6px; font-size:14px; }
+  .q b { color:var(--warn); }
+  .ev h4 { margin:0 0 6px; font-size:12px; color:var(--mute); font-weight:600; text-transform:uppercase; letter-spacing:.04em; }
+  .crop { width:100%; border:1px solid var(--line); border-radius:6px; background-repeat:no-repeat; cursor:zoom-out; position:relative; }
+  .full { position:relative; display:none; cursor:zoom-in; }
+  .full img { width:100%; display:block; border:1px solid var(--line); border-radius:6px; }
+  .full .box { position:absolute; border:2px solid var(--hi); background:rgba(255,45,85,.10); pointer-events:none; }
+  .ev.showfull .full { display:block; } .ev.showfull .crop { display:none; }
+  .hint { font-size:12px; color:var(--mute); margin:4px 0 0; }
+  table { border-collapse:collapse; width:100%; font-size:13px; margin-top:8px; }
+  th, td { text-align:left; padding:5px 8px; border-bottom:1px solid var(--line); vertical-align:top; }
+  th { color:var(--mute); font-weight:600; }
+  td.raw { font-family:ui-monospace, Consolas, monospace; }
+  tr.bad td { background:#fff1f0; }
+  .play { font:inherit; padding:5px 12px; border:1px solid var(--ink); background:var(--ink); color:#fff; border-radius:6px; cursor:pointer; margin:0 8px 8px 0; }
+  audio, video { width:100%; max-width:560px; display:block; margin-bottom:8px; }
+  .note { background:#fff8e1; border:1px solid #ecd9a0; border-radius:8px; padding:12px 16px; margin:14px 0; }
+  code { font-family:ui-monospace, Consolas, monospace; font-size:13px; background:#f0eee9; padding:1px 4px; border-radius:3px; }
+</style>
+</head>
+<body>
+<header>
+  <h1>S03E01 „status for the night” — wymagania i dowody</h1>
+  <p class="sub">Po lewej: co napisał lub powiedział autor (cytat w oryginale). Po prawej: miejsce w źródle, na które wskazuje cytowanie z listy. Stan na 2026-11-18. Nic nie zostało wysłane do kursu.</p>
+</header>
+<main>
+  <nav id="nav"></nav>
+  <div id="rows"></div>
+
+  <h2>Dane: ops feed (odczyt 2026-11-18 20:37 UTC)</h2>
+  <p class="sub">Publiczny GET. Nagłówki odpowiedzi: <code>Access-Control-Allow-Origin: *</code>, <code>Cache-Control: public, max-age=60</code>. Pole <code>updatedAt</code> = <code>2026-11-18T20:37:00Z</code>, czyli feed zmienia się na żywo.</p>
+  <table id="feed"></table>
+
+  <h2>Pary, których nie uznałem za konflikt</h2>
+  <div class="note">Spec mówi: „Tagged ones are the ones we hold the build to. Untagged lines are context.” Dlatego trzy poniższe pary zostają w „przyjętych”: druga strona nie ma tagu ani id rekordu, więc nie ma czego wpisać w pole <code>with</code>. To moja ocena, nie fakt z kursu.</div>
+  <table>
+    <tr><th>Wymaganie z tagiem</th><th>Linia bez tagu</th><th>Gdzie jest linia bez tagu</th></tr>
+    <tr><td><b>R-X3M</b> „Every line gets its own row on the page, tram 3 included.”</td><td>„One row per incident: when it opened, when it closed, what it touched.”</td><td>spec.pdf, strona 1</td></tr>
+    <tr><td><b>R-L6H</b> „json updatedAt = the ops feed's, read live, never a copy”</td><td>„updatedAt (when the data was read)”</td><td>spec.pdf, strona 1, sekcja Data</td></tr>
+    <tr><td><b>R-M6Z</b> „keep it violet, exactly this one”</td><td>„ask product about colours?”</td><td>whiteboard.jpg, ostatnia linia</td></tr>
+  </table>
+</main>
+
+<script>
+const IMG = {
+  "spec-p1.png": [1860, 2632], "spec-p2.png": [1860, 2632], "screenshot.png": [1280, 800],
+  "whiteboard.jpg": [1280, 860], "recording-16.40.png": [960, 540], "recording-06.00.png": [960, 540],
+  "board-2026-11-18.jpg": [1512, 801]
+};
+// passes: [1 as is, 2 filtered, 3 slowed 0.85, 4 clip slowed 0.75]
+const R = [
+  { tag:"R-R9M", kind:"accepted", who:"product (spec)", text:"Newest incident at the top.", src:"spec.pdf, strona 1", img:"spec-p1.png", region:{x:.11,y:.45,w:.32,h:.03} },
+  { tag:"R-M6Z", kind:"accepted", who:"notatka odręczna na zrzucie", text:"keep it violet, exactly this one", src:"screenshot.png, prawy górny róg", img:"screenshot.png", region:{x:.75,y:.11,w:.14,h:.13}, pad:[.72,.06] },
+  { tag:"R-L6H", kind:"accepted", who:"tablica (niebieski pisak)", text:"json updatedAt = the ops feed's, read live, never a copy", src:"whiteboard.jpg, linie 3–4", img:"whiteboard.jpg", region:{x:.18,y:.31,w:.37,h:.12} },
+  { tag:"R-L6Z", kind:"accepted", who:"product (notatka na udostępnionym ekranie)", text:"footer: all times UTC", src:"recording.mp4, obraz, 20 s (widoczna 14,2–24,6 s)", img:"recording-16.40.png", region:{x:.675,y:.269,w:.292,h:.067}, media:{file:"recording.mp4", at:20, video:true} },
+  { tag:"R-X3M", kind:"accepted", spoken:true, who:"product (głos w nagraniu)", text:"Every line gets its own row on the page, tram 3 included. The boards care about that one.", src:"recording.mp4, dźwięk, 6,0 s", media:{file:"recording.mp4", at:5.5, video:true},
+    passes:["Rx3, M. Every line gets its own row…","Rx3, M. Every line gets its own row…","Rx3, M. Every line gets its own row…","Rx3, m. Every line gets its own row on the"],
+    doubt:"Końcowe M może być N: jeden model, żaden przebieg nie dał innej litery." },
+  { tag:"R-Z8H", kind:"accepted", spoken:true, who:"on-call (notatka głosowa)", text:"The tram boards read our status JSON from their own pages, so the JSON has to answer with Access-Control-Allow-Origin: *", src:"memo.m4a, 4,9 s", media:{file:"memo.m4a", at:4.4},
+    passes:["RZ 8 H the tram boards read…","RZ 8 H the tram boards read…","RZ8H. The tram boards read…","RZ8H."],
+    doubt:"Z może być C. „8” i „H” wszystkie przebiegi zapisały jako dwa osobne znaki." },
+  { tag:"R-H2K", kind:"accepted", spoken:true, who:"on-call (notatka głosowa)", text:"Every status JSON carries updatedAt in UTC, ending in Z.", src:"memo.m4a, 18,0 s", media:{file:"memo.m4a", at:17.5},
+    passes:["R H2 K every status JSON carries…","R H2 K every status JSON carries…","RH2K. Every status JSON carries…","RH2K."], doubt:"Brak rozbieżności między przebiegami." },
+  { tag:"R-Z5K", kind:"accepted", spoken:true, who:"on-call (notatka głosowa)", text:"And the page heading says “status for the night”, those exact words.", src:"memo.m4a, 26,4 s", media:{file:"memo.m4a", at:25.9},
+    passes:["RZ 5 K and the page heading says…","RZ 5 K and the page heading says…","RZ5K. And the page heading says…","RZ 5K and the page headings is established."],
+    doubt:"Z może być C. Wycinek (przebieg 4) przekręcił słowa po kodzie, kod jest ten sam." },
+  { tag:"R-M2H", kind:"accepted", spoken:true, who:"on-call (notatka głosowa)", text:"One more on the JSON: Cache-Control max-age 60 seconds or less. The boards pull it that often.", src:"memo.m4a, 33,7 s", media:{file:"memo.m4a", at:33.2},
+    passes:["RM to H one more on the JSON cash control…","RM to H one more on the JSON cash control…","RM2H. One more on the JSON. Cache control…","RM2H. One more on the JSON."],
+    doubt:"Jedyna różnica między przebiegami: „to” kontra „2”. Kształt tagu wymaga znaku, więc czytam „2”. M może być N." },
+  { tag:"R-H6M", kind:"accepted", who:"tram ops (tablica na żywo)", text:"status page: say \"read on every tram 3 board\"", src:"link ze strony Challenge (po zalogowaniu); zrzut z 2026-11-18, bez zmian przez 30 s i względem 15.11", img:"board-2026-11-18.jpg", region:{x:.05,y:.58,w:.50,h:.15} },
+
+  { tag:"R-K6L", kind:"conflict", who:"product (spec)", text:"Dates are shown day first: 14/09. This is the format the night shift writes in its notes.", src:"spec.pdf, strona 2", img:"spec-p2.png", region:{x:.11,y:.18,w:.79,h:.03}, with:"R-M6X",
+    q:"Should dates on the status page be day first (14/09), as the spec says the night shift writes them, or month first (09/14), like the boards?" },
+  { tag:"R-M6X", kind:"conflict", who:"notatka odręczna na zrzucie", text:"dates month first like the boards", src:"screenshot.png, prawa strona, strzałka do komórki 09/14", img:"screenshot.png", region:{x:.75,y:.34,w:.16,h:.14}, with:"R-K6L",
+    q:"Should dates on the status page be month first (09/14), like the boards, or day first (14/09), as the spec says the night shift writes them?" },
+  { tag:"R-L8Z", kind:"conflict", who:"product (spec)", text:"Last night only. Nothing older stays on the page.", src:"spec.pdf, strona 2", img:"spec-p2.png", region:{x:.11,y:.27,w:.5,h:.03}, with:"R-L3R",
+    q:"Should the status page show last night only, with nothing older, or keep the whole week on it?" },
+  { tag:"R-L3R", kind:"conflict", who:"tablica (czerwony pisak)", text:"keep the whole week on it!", src:"whiteboard.jpg, linia 5", img:"whiteboard.jpg", region:{x:.18,y:.44,w:.31,h:.07}, with:"R-L8Z",
+    q:"Should the status page keep the whole week on it, or show last night only, with nothing older?" },
+  { tag:"R-X9Z", kind:"conflict", who:"product (spec)", text:"Each incident names who ran it.", src:"spec.pdf, strona 1", img:"spec-p1.png", region:{x:.11,y:.49,w:.36,h:.03}, with:"rekord 3715 (author „—”), tabela feedu niżej",
+    q:"Each incident must name who ran it, but record 3715 (schedule rebuild) has no author in the ops feed: what should its row show?" }
+];
+const FEED = [
+  ["3710","bus 14","2026-09-12T23:40:00Z","2026-09-12T23:52:00Z","depot sensor reset","night shift"],
+  ["3711","tram 3","2026-09-13T22:50:00Z","2026-09-13T23:06:00Z","board refresh stuck","on-call"],
+  ["3712","night bus N2","2026-09-14T00:15:00Z","2026-09-14T00:33:00Z","rota sync retries","night shift"],
+  ["3713","bus 14","2026-09-14T01:25:00Z","2026-09-14T01:41:00Z","gps gaps","on-call"],
+  ["3714","tram 3","2026-09-14T02:35:00Z","2026-09-14T02:49:00Z","platform display lag","night shift"],
+  ["3715","sched-prod","2026-09-14T03:46:00Z","2026-09-14T04:04:00Z","schedule rebuild","—"]
+];
+const esc = s => s.replace(/[&<>]/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;"}[c]));
+
+function evidence(r) {
+  let h = "";
+  if (r.img) {
+    const [iw, ih] = IMG[r.img], g = r.region;
+    // crop = region plus margin, clamped to the image
+    const mx = Math.max(.04, g.w * .25), my = Math.max(.05, g.h * 1.5);
+    const cx = Math.max(0, g.x - mx), cy = Math.max(0, g.y - my);
+    const cw = Math.min(1 - cx, g.w + 2 * mx), ch = Math.min(1 - cy, g.h + 2 * my);
+    const px = cw < 1 ? cx / (1 - cw) * 100 : 0, py = ch < 1 ? cy / (1 - ch) * 100 : 0;
+    const box = `left:${(g.x - cx) / cw * 100}%;top:${(g.y - cy) / ch * 100}%;width:${g.w / cw * 100}%;height:${g.h / ch * 100}%`;
+    h += `<h4>${r.img} · wycinek z zaznaczonym regionem</h4>
+      <div class="crop" style="aspect-ratio:${cw * iw}/${ch * ih};background-image:url('${r.img}');background-size:${100 / cw}% auto;background-position:${px}% ${py}%"><div class="box" style="position:absolute;border:2px solid var(--hi);background:rgba(255,45,85,.10);${box}"></div></div>
+      <div class="full"><img src="${r.img}" alt=""><div class="box" style="left:${g.x * 100}%;top:${g.y * 100}%;width:${g.w * 100}%;height:${g.h * 100}%"></div></div>
+      <p class="hint">Kliknij obraz, żeby przełączyć: wycinek ↔ całe źródło. Ramka = <code>region</code> z listy (x ${g.x}, y ${g.y}, w ${g.w}, h ${g.h}).</p>`;
+  }
+  if (r.media) {
+    const m = r.media, id = "m-" + r.tag;
+    h += `<h4 style="margin-top:12px">${m.file} · odtwarzanie</h4>
+      <${m.video ? "video" : "audio"} id="${id}" src="${m.file}" controls preload="metadata"></${m.video ? "video" : "audio"}>
+      <button class="play" data-m="${id}" data-at="${m.at}">▶ Odtwórz od ${String(m.at).replace(".", ",")} s</button>`;
+  }
+  if (r.passes) {
+    const names = ["1 · plik bez zmian", "2 · filtr + normalizacja", "3 · zwolnione ×0,85", "4 · wycinek 4 s, ×0,75"];
+    h += `<table><tr><th>Przebieg</th><th>Co zapisał model (surowy tekst)</th></tr>` +
+      r.passes.map((p, i) => `<tr><td>${names[i]}</td><td class="raw">${esc(p)}</td></tr>`).join("") +
+      `</table><p class="hint">Model: whisper small (jedyny na tej maszynie). Przebiegi różnią się wejściem, nie modelem. ${esc(r.doubt)}</p>`;
+  }
+  return h;
+}
+
+function row(r) {
+  const pill = r.kind === "conflict" ? `<span class="pill conflict">konflikt</span>` : `<span class="pill accepted">przyjęte</span>`;
+  return `<section class="row" data-kind="${r.kind}" data-spoken="${!!r.spoken}">
+    <div>
+      <span class="tag">${r.tag}</span>${pill}${r.spoken ? `<span class="pill spoken">ze słuchu</span>` : ""}
+      <blockquote>${esc(r.text)}</blockquote>
+      <dl><dt>Kto</dt><dd>${r.who}</dd><dt>Źródło</dt><dd>${r.src}</dd>${r.with ? `<dt>Spór z</dt><dd>${r.with}</dd>` : ""}</dl>
+      ${r.q ? `<div class="q"><b>Pytanie do właściciela:</b> ${esc(r.q)}</div>` : ""}
+    </div>
+    <div class="ev">${evidence(r)}</div>
+  </section>`;
+}
+
+document.getElementById("rows").innerHTML = R.map(row).join("");
+document.getElementById("feed").innerHTML = `<tr><th>id</th><th>line</th><th>opened</th><th>closed</th><th>what</th><th>author</th></tr>` +
+  FEED.map(f => `<tr class="${f[5] === "—" ? "bad" : ""}">${f.map(c => `<td>${c}</td>`).join("")}</tr>`).join("");
+
+const filters = [["all", `Wszystkie (${R.length})`], ["accepted", "Przyjęte (10)"], ["conflict", "Konflikty (5)"], ["spoken", "Ze słuchu (5)"]];
+const nav = document.getElementById("nav");
+nav.innerHTML = filters.map(([k, l], i) => `<button data-f="${k}" class="${i ? "" : "on"}">${l}</button>`).join("");
+nav.addEventListener("click", e => {
+  const f = e.target.dataset.f; if (!f) return;
+  nav.querySelectorAll("button").forEach(b => b.classList.toggle("on", b === e.target));
+  document.querySelectorAll(".row").forEach(s => {
+    s.style.display = f === "all" || s.dataset.kind === f || (f === "spoken" && s.dataset.spoken === "true") ? "" : "none";
+  });
+});
+document.addEventListener("click", e => {
+  const p = e.target.closest(".play");
+  if (p) { const m = document.getElementById(p.dataset.m); m.currentTime = +p.dataset.at; m.play(); return; }
+  const c = e.target.closest(".crop, .full");
+  if (c) c.closest(".ev").classList.toggle("showfull");
+});
+</script>
+</body>
+</html>
