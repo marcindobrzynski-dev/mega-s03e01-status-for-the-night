@@ -1,5 +1,7 @@
 /** The one line that always gets a row, also without incidents (spec, late decision 1). */
-export const TRAM_3 = "tram 3";
+// Not exported: workerd treats every named export of the main module as an entrypoint
+// and refuses to start on a string export.
+const TRAM_3 = "tram 3";
 
 export interface Incident {
 	id: string;
@@ -234,9 +236,76 @@ ${incidents}
 `;
 }
 
-// Skeleton only. The request handler follows.
+/** A hanging feed becomes a 502 after this long (agent default). */
+const FEED_TIMEOUT_MS = 5000;
+
+/** Both success routes may be cached this long (R-M2H; the page follows the JSON, agent default). */
+const CACHE_OK = "public, max-age=60";
+
+const TEXT = "text/plain; charset=utf-8";
+
+const ALLOW = "GET, HEAD";
+
+function respond(body: string, status: number, headers: Record<string, string>): Response {
+	return new Response(body, { status, headers: { "X-Content-Type-Options": "nosniff", ...headers } });
+}
+
+function feedUnavailable(cors: boolean): Response {
+	const headers: Record<string, string> = { "Content-Type": TEXT, "Cache-Control": "no-store" };
+	if (cors) headers["Access-Control-Allow-Origin"] = "*";
+	return respond("status feed unavailable", 502, headers);
+}
+
+/** Reads the feed live, past any cache the platform lets us skip. Throws on every failure. */
+async function readFeed(url: string): Promise<Status> {
+	const response = await fetch(url, {
+		headers: { Accept: "application/json" },
+		cache: "no-store",
+		signal: AbortSignal.timeout(FEED_TIMEOUT_MS),
+	});
+	if (!response.ok) throw new Error(`feed answered ${response.status}`);
+	return buildStatus(await response.json());
+}
+
+async function route(request: Request, env: Env): Promise<Response> {
+	if (request.method !== "GET" && request.method !== "HEAD") {
+		return respond("method not allowed", 405, { "Content-Type": TEXT, Allow: ALLOW });
+	}
+
+	const { pathname } = new URL(request.url);
+	if (pathname !== "/" && pathname !== "/status.json") {
+		return respond("not found", 404, { "Content-Type": TEXT });
+	}
+
+	const isJson = pathname === "/status.json";
+	let status: Status;
+	try {
+		status = await readFeed(env.FEED_URL);
+	} catch {
+		return feedUnavailable(isJson);
+	}
+
+	if (isJson) {
+		const body = JSON.stringify({ updatedAt: status.updatedAt, incidents: status.incidents });
+		return respond(body, 200, {
+			"Content-Type": "application/json; charset=utf-8",
+			"Access-Control-Allow-Origin": "*",
+			"Cache-Control": CACHE_OK,
+		});
+	}
+	return respond(renderPage(status), 200, { "Content-Type": "text/html; charset=utf-8", "Cache-Control": CACHE_OK });
+}
+
 export default {
-	async fetch(): Promise<Response> {
-		return new Response("not built yet", { status: 503 });
+	async fetch(request, env): Promise<Response> {
+		let response: Response;
+		try {
+			response = await route(request, env);
+		} catch {
+			// Anything unexpected: a bare 500, never a stack trace.
+			response = respond("internal error", 500, { "Content-Type": TEXT, "Cache-Control": "no-store" });
+		}
+		// HEAD: same status and headers as GET, no body.
+		return request.method === "HEAD" ? new Response(null, response) : response;
 	},
 } satisfies ExportedHandler<Env>;
